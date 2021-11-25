@@ -1,4 +1,4 @@
-package com.sisyphuswxg.mybatis.po;
+package com.sisyphuswxg.book1.po;
 
 import java.io.Serializable;
 import java.util.Date;

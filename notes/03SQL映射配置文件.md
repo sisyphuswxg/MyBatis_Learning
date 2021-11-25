@@ -24,7 +24,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   
 <mapper namespace="test">
 
-    <select id="findUserById" parameterType="int" resultType="com.sisyphuswxg.mybatis.po.User">
+    <select id="findUserById" parameterType="int" resultType="com.sisyphuswxg.book1.po.User">
         SELECT * FROM USER WHERE id=#{id}
     </select>
     

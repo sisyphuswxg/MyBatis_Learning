@@ -1,4 +1,4 @@
-package com.sisyphuswxg.mybatis.po;
+package com.sisyphuswxg.book1.po;
 
 public class BatchCustomer extends Batch{
     private String username;

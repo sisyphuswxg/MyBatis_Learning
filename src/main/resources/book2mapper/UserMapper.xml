@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 当Mapper接口和XML文件关联时，namespace的值就需要配置成接口的全限定名称 -->
+<mapper namespace="com.sisyphuswxg.book2.mapper.UserMapper">
+
+    <!--
+      resultMap:column和property将查询列的值映射到type对象的属性上
+        column:数据库列名；  property：java类属性名;
+        关于property：不区分大小写，但方便阅读，尽可能区分一下~
+        此外，mybatis还提供了将下划线命名的数据库转换为Java对象的驼峰式命名，如user_name转换为userName，
+           若要使用该功能，需要在配置文件的<settings>中将mapUnderscoreToCamelCase属性设置为true（默认为false）
+     -->
+    <resultMap id="userMap" type="sysUser">
+        <id property="id" column="id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPassword" column="user_password"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userInfo" column="user_info"/>
+        <result property="headImg" column="head_img" jdbcType="BLOB"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="userMap">
+        select *
+        from sys_user
+        where id = ${id}
+    </select>
+
+    <!--
+        直接通过resultType来设置返回结果的类型，不过这里要为所有列名和属性名不一致的列设置别名
+        通过设置别名使最终的查询结果列和resultType指定对象的属性名保持一致，进而实现自动映射。
+
+        因此：将查询列映射到对象属性就有两种办法：
+        1. 通过在resultMap中配置property和column属性的映射，参考selectById
+        2. 在SQL中设置别名，参考selectAll
+     -->
+    <select id="selectAll" resultType="sysUser">
+        select id,
+               user_name     userName,
+               user_password userPassword,
+               user_email    userEmail,
+               user_info     userInfo,
+               head_img      headImg,
+               create_time   createTime
+        from sys_user
+    </select>
+
+
+    <!--
+     根据用户id获取角色信息
+       - 根据用户id获取用户拥有的所有角色，返回的结果是角色集合（结果只有角色的信息，不包括额外的其他字段信息）
+       - 涉及到3个表：sys_user、sys_role、sys_user_role
+    -->
+    <select id="selectRolesByUserId" resultType="sysRole">
+        select r.id,
+               r.role_name   roleName,
+               r.enabled,
+               r.create_by   createBy,
+               r.create_time createTime
+        from sys_user u
+                 inner join sys_user_role ur on u.id = ur.user_id
+                 inner join sys_role r on ur.role_id = r.id
+        where u.id = ${id}
+    </select>
+
+    <!--
+     根据用户id获取角色信息（返回角色信息 + 用户信息）
+     是上面例子的进阶版。
+     有两种处理办法：
+     1. 在SysRole中新增两个属性userName和userEmail。或新建一个SysRoleExtend继承类，在新类中增加属性
+        当新增的user属性过多时这种办法就不太使用
+     2. 直接在SysRole中新增一个SysUser对象，字段名为user，同时修改如下sql语句：
+    -->
+    <select id="selectRolesByUserIdPro" resultType="sysRole">
+        select r.id,
+               r.role_name     roleName,
+               r.enabled,
+               r.create_by     createBy,
+               r.create_time   createTime,
+               u.user_name  as "user.userName",
+               u.user_email as "user.userEmail"
+        from sys_user u
+                 inner join sys_user_role ur on u.id = ur.user_id
+                 inner join sys_role r on ur.role_id = r.id
+        where u.id = ${id}
+    </select>
+
+
+    <!--
+    插入一条数据：这里是一个简单的Demo
+    如下：为了防止类型错误，对于一些特殊的数据类型，建议指定具体的jdbcType值。
+      - 例如headImg指定BLOG类型，BLOG对应的类型是ByteArrayInputStream，即二进制数据流。
+      - createTime指定TIMESTAMP类型，因为数据库区分date/time/datetime，但Java中都使用java.util.Date类型，因此需要手动指定。
+        date、time、datetime对应的JDBC类型分别是DATE、TIME、TIMESTAMP。
+    -->
+    <insert id="insertOneUser">
+        insert into sys_user(id,
+                             user_name,
+                             user_password,
+                             user_email,
+                             user_info,
+                             head_img,
+                             create_time)
+        values (#{id},
+                #{userName},
+                #{userPassword},
+                #{userEmail},
+                #{userInfo},
+                #{headImg, jdbcType=BLOB},
+                #{createTime, jdbcType=TIMESTAMP})
+    </insert>
+
+
+    <!--
+    配置了useGeneratedKeys和keyProperty属性。
+      useGeneratedKeys设置为true后，MyBatis会使用JDBC的getGeneratedKeys来取出由数据库内部生成的主键。
+      获得主键后再赋值给keyProperty配置的id属性。
+    存在局限：只适用于支持主键自增的数据库，有些数据库如Oracle是不支持主键自增的，获取id则需要下面一种方法。
+    -->
+    <insert id="insertOneUser2" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_user(user_name,
+                             user_password,
+                             user_email,
+                             user_info,
+                             head_img,
+                             create_time)
+        values (#{userName},
+                #{userPassword},
+                #{userEmail},
+                #{userInfo},
+                #{headImg, jdbcType=BLOB},
+                #{createTime, jdbcType=TIMESTAMP})
+    </insert>
+
+    <!--
+      使用<selectKey>标签来获取主键的值。
+      keyColumn和keyProperty和上面的useGeneratedKeys的用法含义相同。
+      这里的resultType用于设置返回值类型；order属性设置是在insert语句执行前还是执行后获取。
+      LAST_INSERT_ID():用于获取数据库中最后插入的数据的ID值。（MySQL使用的）
+    -->
+    <insert id="insertOneUser3">
+        insert into sys_user(user_name,
+                             user_password,
+                             user_email,
+                             user_info,
+                             head_img,
+                             create_time)
+        values (#{userName},
+                #{userPassword},
+                #{userEmail},
+                #{userInfo},
+                #{headImg, jdbcType=BLOB},
+                #{createTime, jdbcType=TIMESTAMP})
+        <selectKey keyColumn="id" resultType="long" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+</mapper>

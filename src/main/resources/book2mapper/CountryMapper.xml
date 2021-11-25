@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="country">
+
+    <!-- select获取country列表 -->
+    <select id="selectAll" resultType="country">
+        SELECT id, countryname, countrycode
+        FROM COUNTRY
+    </select>
+
+</mapper>

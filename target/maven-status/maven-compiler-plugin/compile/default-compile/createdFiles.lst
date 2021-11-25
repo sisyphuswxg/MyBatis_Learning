@@ -1,2 +1,13 @@
-com/sisyphuswxg/mybatis/po/User.class
+com/sisyphuswxg/mybatis/po/Customer.class
+com/sisyphuswxg/mybatis/po/UserInstance.class
+com/sisyphuswxg/mybatis/model/Country.class
+com/sisyphuswxg/mybatis/po/BatchItem.class
 com/sisyphuswxg/mybatis/datasource/DataConnection.class
+com/sisyphuswxg/mybatis/po/UserQueryInfo.class
+com/sisyphuswxg/mybatis/po/Batch.class
+com/sisyphuswxg/mybatis/po/BatchCustomer.class
+com/sisyphuswxg/mybatis/po/BatchDetail.class
+com/sisyphuswxg/mybatis/po/FinacialProduct.class
+com/sisyphuswxg/mybatis/po/User.class
+com/sisyphuswxg/mybatis/po/GamePlayer.class
+com/sisyphuswxg/mybatis/po/Product.class

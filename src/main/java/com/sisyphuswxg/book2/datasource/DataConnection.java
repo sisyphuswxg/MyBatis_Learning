@@ -1,12 +1,12 @@
-package com.sisyphuswxg.book1.datasource;
-
-import java.io.IOException;
-import java.io.InputStream;
+package com.sisyphuswxg.book2.datasource;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 
 /**
@@ -14,7 +14,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
  */
 public class DataConnection {
 
-    private String resource = "SqlMapConfig.xml";
+    private String resource = "Book2Config.xml";
     private SqlSessionFactory sqlSessionFactory;
     private SqlSession sqlSession;
 

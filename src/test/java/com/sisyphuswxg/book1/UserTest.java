@@ -1,14 +1,13 @@
-package com.sisyphuswxg.mybatis;
+package com.sisyphuswxg.book1;
 
-import com.sisyphuswxg.mybatis.datasource.DataConnection;
+import com.sisyphuswxg.book1.datasource.DataConnection;
 
-import com.sisyphuswxg.mybatis.po.*;
+import com.sisyphuswxg.book1.po.*;
 import org.apache.ibatis.session.SqlSession;
 
 import org.junit.Test;
 
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;

@@ -15,7 +15,6 @@
     </settings>
 
     <typeAliases>
-        <package name="com.sisyphuswxg.book1.po"/>
         <package name="com.sisyphuswxg.book2.model"/>
     </typeAliases>
 
@@ -41,8 +40,12 @@
     </environments>
 
     <mappers>
-        <mapper resource="sqlmap/UserMapper.xml"/>
-        <mapper resource="sqlmap/CountryMapper.xml"/>
+        <mapper resource="book2mapper/CountryMapper.xml"/>
+        <mapper resource="book2mapper/UserMapper.xml"/>
+        <mapper resource="book2mapper/RoleMapper.xml"/>
+        <mapper resource="book2mapper/PrivilegeMapper.xml"/>
+        <mapper resource="book2mapper/UserRoleMapper.xml"/>
+        <mapper resource="book2mapper/RolePrivilegeMapper.xml"/>
     </mappers>
 
 </configuration>

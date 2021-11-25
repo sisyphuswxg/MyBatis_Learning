@@ -15,7 +15,8 @@
     </settings>
 
     <typeAliases>
-        <package name="com.sisyphuswxg.mybatis.po"></package>
+        <package name="com.sisyphuswxg.book1.po"/>
+        <package name="com.sisyphuswxg.book2.model"/>
     </typeAliases>
 
     <!-- 和spring整合后 environments配置将废除-->
@@ -41,6 +42,7 @@
 
     <mappers>
         <mapper resource="sqlmap/UserMapper.xml"/>
+        <mapper resource="sqlmap/CountryMapper.xml"/>
     </mappers>
 
 </configuration>
