@@ -142,21 +142,243 @@
       LAST_INSERT_ID():用于获取数据库中最后插入的数据的ID值。（MySQL使用的）
     -->
     <insert id="insertOneUser3">
-        insert into sys_user(user_name,
-                             user_password,
-                             user_email,
-                             user_info,
-                             head_img,
-                             create_time)
-        values (#{userName},
-                #{userPassword},
-                #{userEmail},
-                #{userInfo},
-                #{headImg, jdbcType=BLOB},
-                #{createTime, jdbcType=TIMESTAMP})
+        insert into sys_user
+        (user_name,
+        user_password,
+        user_email,
+        user_info,
+        head_img,
+        create_time)
+        values
+        (#{userName},
+        #{userPassword},
+        #{userEmail},
+        #{userInfo},
+        #{headImg, jdbcType=BLOB},
+        #{createTime, jdbcType=TIMESTAMP})
         <selectKey keyColumn="id" resultType="long" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
     </insert>
+
+    <!--
+    根据主键（id)更新
+    -->
+    <update id="updateById">
+        update sys_user
+        set user_name     = #{userName},
+            user_password = #{userPassword},
+            user_email    = #{userEmail},
+            user_info     = #{userInfo},
+            head_img      = #{headImg, jdbcType=BLOB},
+            create_time   = #{createTime, jdbcType=TIMESTAMP}
+        where id = #{id}
+    </update>
+
+    <!--
+    根据主键（id)删除
+    -->
+    <delete id="deleteById">
+        delete
+        from sys_user
+        where id = #{id}
+    </delete>
+
+    <!--
+      多个参数：不使用@Param时
+        注意：where子句中，不能使用#{userId}和#{enabled}，会报错，报错信息是：Parameter 'id' not found. Available parameters are [arg1, arg0, param1, param2]
+        而要修改成：#{arg0}、#{arg1}或#{param1}、#{param2}
+    -->
+    <select id="selectRolesByUserIdAndRoleEnabled01" resultType="sysRole">
+        select r.id,
+               r.role_name   roleName,
+               r.enabled,
+               r.create_by   createBy,
+               r.create_time createTime
+        from sys_user u
+                 inner join sys_user_role ur on u.id = ur.user_id
+                 inner join sys_role r on ur.role_id = r.id
+        where u.id = #{param1}
+          and r.enabled = #{param2}
+    </select>
+
+    <!--
+      多个参数：使用@Param时（在接口文件UserMapper.java文件，定义接口时带上@Param注解）
+        注意：此时在SQL语句中，就可以使用@{userId}和@{enabled}。或者可以使用@{param1}和@{param2}
+        注意：不能使用@{arg0}和@{arg1}，会报错，报错信息是：Parameter 'arg0' not found. Available parameters are [userId, param1, enabled, param2]
+
+        注意：当参数是JavaBean时，如(@Param("userId") SysUser user, @Param("enabled") SysRole role)，此时可以在xml中使用#{user.id}和#{role.enabled}。
+    -->
+    <select id="selectRolesByUserIdAndRoleEnabled02" resultType="sysRole">
+        select r.id,
+               r.role_name   roleName,
+               r.enabled,
+               r.create_by   createBy,
+               r.create_time createTime
+        from sys_user u
+                 inner join sys_user_role ur on u.id = ur.user_id
+                 inner join sys_role r on ur.role_id = r.id
+        where u.id = #{userId}
+          and r.enabled = #{enabled}
+    </select>
+
+    <!--
+    MyBatis提供了@Select/@Update/@Insert/@Delete注解的方式，可以直接在接口类上书写sql语句。
+      - 不推荐此种使用方式，因为：注解方式需要手动拼接字符串，需要编写代码重新编译，不方便维护，除非在程序简单且数据库表基本不变的情况下，否则都不建议使用。
+    -->
+
+
+    <!--
+    动态SQL:
+      - MyBatis的强大功能之一
+      - 采用了功能强大的OGNL（ObjectGraphNavigationLanguage）表达式语言
+      - 常用有如下几个标签:
+        - if
+        - choose(when、otherwise)
+        - trim(where、set)
+        - foreach
+        - bind
+    -->
+
+    <!--
+     如下Demo： select语句中的if标签
+
+     如果sql的where子句写法如下：带来的问题就是当只提供userName参数，不提供userEmail时，会导致user_email=null也会成为查询条件，导致查不出正确的结果。
+       where user_name like concat('%', #{userName}, '%') and user_email like concat('%', #{userEmail}, '%')
+     使用if标签的代码可以解决，如下。
+       if标签有一个必填的属性test，test的属性值是一个符合OGNL要求的判断表达式，表达式的结果可以是true或false（非0的值都视为true）
+       property != null 或 property == null 用来判断属性值是否为空
+       property != '' 或 property == '' 用来判断属性值是否为空字符串
+       可以使用and或or，意思同java中的&&和||
+     注意：这里多了一个1=1条件，避免当两个条件都不满足时SQL语法错误的情况，后续会使用where标签进行优化。
+    -->
+    <select id="selectByUser" resultType="sysUser">
+        select
+        id,
+        user_name userName,
+        user_password userPassword,
+        user_email userEmail,
+        user_info userInfo,
+        head_img headImg,
+        create_time createTime
+        from sys_user
+        where 1= 1
+        <if test="userName != null and userName != ''">
+            and user_name like concat('%', #{userName}, '%')
+        </if>
+        <if test="userEmail!= null and userEmail!= ''">
+            and user_email like concat('%', #{userEmail}, '%')
+        </if>
+    </select>
+
+    <!--
+    动态SQL： Update语句中的if标签
+    -->
+    <update id="updateByIdSelective">
+        update sys_user
+        set
+        <if test="userName != null and userName != ''">
+            user_name = #{userName},
+        </if>
+        <if test="userPassword != null and userPassword != ''">
+            user_password= #{userPassword},
+        </if>
+        <if test="userEmail != null and userEmail != ''">
+            user_email = #{userEmail},
+        </if>
+        <if test="userInfo != null and userInfo != ''">
+            user_info = #{userInfo},
+        </if>
+        <if test="headImg != null">
+            head_img = #{headImg, jdbcType=BLOB},
+        </if>
+        <if test="createTime != null">
+            create_time = #{createTime, jdbcType=TIMESTAMP},
+        </if>
+        id = #{id}
+        where id = #{id}
+    </update>
+
+    <!--
+    动态SQL： Insert语句中的if标签
+    -->
+    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_user(user_name,
+        user_password,
+        <if test="userEmail != null and userEmail != ''">
+            user_email,
+        </if>
+        user_info,
+        head_img,
+        create_time
+        )
+        values(
+        #{userName},
+        #{userPassword},
+        <if test="userEmail != null and userEmail != ''">
+            #{user_email},
+        </if>
+        #{userInfo},
+        #{headImg, jdbcType=BLOB},
+        #{createTime, jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <!--
+    choose: 可以实现if...else...的逻辑
+    choose标签中至少包含1个when，0个或1个otherwise。
+    -->
+    <select id="selectByIdOrUserName" resultType="sysUser">
+        select id,
+        user_name userName,
+        user_password userPassword,
+        user_info userInfo,
+        head_img headImg,
+        create_time createTime
+        from sys_user
+        where 1 = 1
+        <choose>
+            <when test="id != null">
+                and id = #{id}
+            </when>
+            <when test="userName != null and userName != ''">
+                and user_name = #{userName}
+            </when>
+            <otherwise>
+                and 1 = 2
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--
+    where标签：
+      - 和Select语句的if标签是相同例子，这里使用where语句来优化
+      - where标签的作用：
+        1. 如果该标签包含的元素有返回值，就插入一个where
+        2. 如果where后面的字符串是以AND和OR开头的，就删除掉
+      使用where标签后，不需要再像前面的需要写1=1这种语句。
+      如下demo，如果if条件满足，where元素的内容就是以and开头的条件，where会自动去掉开头的and；
+               如果if条件不满足，where元素中没有内容，SQL中也不会出现where。
+    -->
+    <select id="selectByUser2" resultType="sysUser">
+        select
+        id,
+        user_name userName,
+        user_password userPassword,
+        user_email userEmail,
+        user_info userInfo,
+        head_img headImg,
+        create_time createTime
+        from sys_user
+        <where>
+            <if test="userName != null and userName != ''">
+                and user_name like concat('%', #{userName}, '%')
+            </if>
+            <if test="userEmail!= null and userEmail!= ''">
+                and user_email like concat('%', #{userEmail}, '%')
+            </if>
+        </where>
+    </select>
+
 
 </mapper>

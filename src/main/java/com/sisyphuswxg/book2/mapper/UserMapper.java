@@ -1,6 +1,7 @@
 package com.sisyphuswxg.book2.mapper;
 
 import com.sisyphuswxg.book2.model.*;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -61,4 +62,80 @@ public interface UserMapper {
      */
     int insertOneUser3(SysUser sysUser);
 
+    /**
+     * 根据主键id更新
+     *
+     * @param sysUser
+     * @return
+     */
+    int updateById(SysUser sysUser);
+
+    /**
+     * 根据主键id删除
+     *
+     * @param id
+     * @return
+     */
+    int deleteById(Long id);
+
+    /**
+     * 多个参数：不使用@Param
+     *
+     * @param userId
+     * @param enabled
+     * @return
+     */
+    List<SysRole> selectRolesByUserIdAndRoleEnabled01(Long userId, Integer enabled);
+
+    /**
+     * 多个参数：不使用@Param
+     *
+     * @param userId
+     * @param enabled
+     * @return
+     */
+    List<SysRole> selectRolesByUserIdAndRoleEnabled02(@Param("userId") Long userId,
+                                                      @Param("enabled") Integer enabled);
+
+    /**
+     * 动态SQL： Select语句中的if标签
+     *
+     * @param user
+     * @return
+     */
+    List<SysUser> selectByUser(SysUser user);
+
+
+    /**
+     * 动态SQL：Update语句中的if标签
+     *
+     * @param user
+     * @return
+     */
+    int updateByIdSelective(SysUser user);
+
+
+    /**
+     * 动态SQL：Insert语句中的if标签
+     *
+     * @param user
+     * @return
+     */
+    int insertSelective(SysUser user);
+
+    /**
+     * 动态SQL：choose标签
+     *
+     * @param user
+     * @return
+     */
+    SysUser selectByIdOrUserName(SysUser user);
+
+    /**
+     * 动态SQL：where标签
+     *
+     * @param user
+     * @return
+     */
+    List<SysUser> selectByUser2(SysUser user);
 }
