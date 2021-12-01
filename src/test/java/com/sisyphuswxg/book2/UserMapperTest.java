@@ -7,8 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class UserMapperTest extends BaseMapperTest {
 
@@ -481,6 +480,119 @@ public class UserMapperTest extends BaseMapperTest {
         }
     }
 
+    /**
+     * 动态SQL语句：set标签
+     */
+    @Test
+    public void testUpdateByIdSelective2(){
+        SqlSession sqlSession = getSqlSession();
+        try {
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            //从数据库查询 1 个 user 对象
+            SysUser user = new SysUser();
+            //更新 id = 1 的用户
+            user.setId(1L);
+            //修改邮箱
+            user.setUserEmail("test@mybatis.tk");
+            //将新建的对象插入数据库中，特别注意，这里的返回值 result 是执行的 SQL 影响的行数
+            int result = userMapper.updateByIdSelective2(user);
+            //只更新 1 条数据
+            Assert.assertEquals(1, result);
+            //根据当前 id 查询修改后的数据
+            user = userMapper.selectById(1L);
+            //修改后的名字保持不变，但是邮箱变成了新的
+            Assert.assertEquals("admin", user.getUserName());
+            Assert.assertEquals("test@mybatis.tk", user.getUserEmail());
+        } finally {
+            //为了不影响数据库中的数据导致其他测试失败，这里选择回滚
+            sqlSession.rollback();
+            //不要忘记关闭 sqlSession
+            sqlSession.close();
+        }
+    }
+
+    /**
+     * foreach实现in集合
+     * 功能：根据用户id集合查询
+     *
+     */
+    @Test
+    public void testSelectByIdList(){
+        SqlSession sqlSession = getSqlSession();
+        try {
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            List<Long> idList = new ArrayList<Long>();
+            idList.add(1L);
+            idList.add(1001L);
+            //业务逻辑中必须校验 idList.size() > 0
+            List<SysUser> userList = userMapper.selectByIdList(idList);
+            Assert.assertEquals(2, userList.size());
+            for (SysUser user: userList) {
+                System.out.println("user info: " + user);
+            }
+        } finally {
+            //不要忘记关闭 sqlSession
+            sqlSession.close();
+        }
+    }
+
+    /**
+     * foreach实现批量插入
+     */
+    @Test
+    public void testInsertList(){
+        SqlSession sqlSession = getSqlSession();
+        try {
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            //创建一个 user 对象
+            List<SysUser> userList = new ArrayList<SysUser>();
+            for(int i = 0; i < 2; i++){
+                SysUser user = new SysUser();
+                user.setUserName("test" + i);
+                user.setUserPassword("123456");
+                user.setUserEmail("test@mybatis.tk");
+                userList.add(user);
+            }
+            //将新建的对象批量插入数据库中，特别注意，这里的返回值 result 是执行的 SQL 影响的行数
+            int result = userMapper.insertList(userList);
+            Assert.assertEquals(2, result);
+            for(SysUser user : userList){
+                System.out.println(user.getId());
+            }
+        } finally {
+            //为了不影响数据库中的数据导致其他测试失败，这里选择回滚
+            sqlSession.rollback();
+            //不要忘记关闭 sqlSession
+            sqlSession.close();
+        }
+    }
+
+    /**
+     * foreach实现动态UPDATE
+     */
+    @Test
+    public void testUpdateByMap(){
+        SqlSession sqlSession = getSqlSession();
+        try {
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            //从数据库查询 1 个 user 对象
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("id", 1L);
+            map.put("user_email", "test@mybatis.tk");
+            map.put("user_password", "12345678");
+            //更新数据
+            userMapper.updateByMap(map);
+            //根据当前 id 查询修改后的数据
+            SysUser user = userMapper.selectById(1L);
+            Assert.assertEquals("test@mybatis.tk", user.getUserEmail());
+            Assert.assertEquals("12345678", user.getUserPassword());
+        } finally {
+            //为了不影响数据库中的数据导致其他测试失败，这里选择回滚
+            sqlSession.rollback();
+            //不要忘记关闭 sqlSession
+            sqlSession.close();
+        }
+    }
 
 
 }

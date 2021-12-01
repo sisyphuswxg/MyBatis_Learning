@@ -4,6 +4,7 @@ import com.sisyphuswxg.book2.model.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserMapper {
 
@@ -138,4 +139,35 @@ public interface UserMapper {
      * @return
      */
     List<SysUser> selectByUser2(SysUser user);
+
+    /**
+     * 动态SQL：set标签
+     *
+     * @param user
+     * @return
+     */
+    int updateByIdSelective2(SysUser user);
+
+    /**
+     * foreach实现in集合
+     *
+     * @param idList
+     * @return
+     */
+    List<SysUser> selectByIdList(List<Long> idList);
+
+    /**
+     * foreach实现批量插入
+     *
+     * @param userList
+     * @return
+     */
+    int insertList(List<SysUser> userList);
+
+    /**
+     * foreach实现动态UPDATE
+     *
+     * @param map
+     */
+    void updateByMap(Map<String, Object> map);
 }
